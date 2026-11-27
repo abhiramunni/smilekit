@@ -598,3 +598,43 @@ function renderTimer(){
   $('#timerBtn').textContent=T.running?'Pause':(T.left<=0?'Brush again':(T.left<T.total?'Resume':'Start brushing'));
 }
 function timerTick(){
+  if(!T.running)return;
+  var now=Date.now(),el=Math.floor((now-T.last)/1000);
+  if(el>=1){T.last=now;var prev=Math.min(3,Math.floor((T.total-T.left)/30));T.left=Math.max(0,T.left-el);
+    var qi=Math.min(3,Math.floor((T.total-T.left)/30));
+    if(T.left>0&&qi!==prev)beep(660,0.12);
+    if(T.left<=0){T.running=false;beep(880,0.3);setTimeout(function(){beep(1174,0.3)},220);
+      var rec=todayRec();if(!rec.am)rec.am=true;else if(!rec.pm)rec.pm=true;save();renderToday();renderStats();
+      $('#timerNote').textContent='Done — today\u2019s brush is ticked off. Two minutes well spent.';
+    }
+  }
+  renderTimer();
+  if(T.running)T.raf=requestAnimationFrame(timerTick);
+}
+$('#timerBtn').addEventListener('click',function(){
+  if(T.left<=0){T.left=T.total;T.running=true;T.last=Date.now();$('#timerNote').textContent='Finishing the timer ticks off your next brush for today.';T.raf=requestAnimationFrame(timerTick);renderTimer();return}
+  T.running=!T.running;
+  if(T.running){T.last=Date.now();T.raf=requestAnimationFrame(timerTick)}
+  else{cancelAnimationFrame(T.raf)}
+  renderTimer();
+});
+$('#timerReset').addEventListener('click',function(){T.running=false;cancelAnimationFrame(T.raf);T.left=T.total;$('#timerNote').textContent='Finishing the timer ticks off your next brush for today.';renderTimer()});
+renderTimer();
+</script>
+<script>
+'use strict';
+/* ---------- tooth chart ---------- */
+var PATHS={
+  incisor:'M9 3 Q9 0 13 0 H31 Q35 0 35 3 V22 Q35 27 30 27 H26 L23.5 57 Q23 62 19.5 62 Q16 62 15.5 57 L13 27 H9 Q9 27 9 22 Z',
+  canine:'M9 4 Q9 0 13 0 H31 Q35 0 35 4 L35 20 L31 27 L27 27 L24 57 Q23.5 62 19.5 62 Q15.5 62 15 57 L12 27 L8 20 Z',
+  premolar:'M8 3 Q8 0 12 0 H32 Q36 0 36 3 V24 Q36 28 31 28 H26 L23 57 Q22.5 62 19.5 62 Q16.5 62 16 57 L13 28 H8 Q8 28 8 24 Z',
+  molar:'M6 3 Q6 0 11 0 H33 Q38 0 38 3 V22 Q38 27 33 27 H30 L28 50 Q27.5 57 24 57 Q20.5 57 20.5 50 L20 27 H18 L17.5 50 Q17 57 13.5 57 Q10 57 9.5 50 L8 27 H6 Q6 27 6 22 Z'
+};
+function pathFor(fdi){var t=toothType(fdi);return t<=2?PATHS.incisor:t===3?PATHS.canine:t<=5?PATHS.premolar:PATHS.molar}
+function toothFill(fdi){
+  var rec=state.teeth[String(fdi)];
+  if(!rec)return STATUSES.healthy.color;
+  return STATUSES[rec.status].color;
+}
+function buildChart(){
+  var svg=$('#mouthSvg'),s='';
