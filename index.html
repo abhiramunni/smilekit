@@ -438,3 +438,43 @@ function beep(freq,dur){try{var C=window.AudioContext||window.webkitAudioContext
 
 /* ---------- static data ---------- */
 var STATUSES={
+  healthy:{label:'Healthy',color:'#f3ead6',pill:'Healthy'},
+  watch:{label:'Keep an eye on it',color:'#f6dfae',pill:'Watch'},
+  pain:{label:'Hurts / sensitive',color:'#f3ddd3',pill:'Hurts'},
+  treated:{label:'Treated (filling / crown)',color:'#e9dcc0',pill:'Treated'},
+  missing:{label:'Missing',color:'#ece7dd',pill:'Missing'}
+};
+var TOOTH_NAMES={1:'central incisor',2:'lateral incisor',3:'canine',4:'first premolar',5:'second premolar',6:'first molar',7:'second molar',8:'third molar (wisdom tooth)'};
+var QUAD_NAMES={1:'Upper right',2:'Upper left',3:'Lower left',4:'Lower right'};
+var UPPER=[18,17,16,15,14,13,12,11,21,22,23,24,25,26,27,28];
+var LOWER=[48,47,46,45,44,43,42,41,31,32,33,34,35,36,37,38];
+function toothType(fdi){return +String(fdi)[1]}
+function toothName(fdi){var s=String(fdi);return QUAD_NAMES[+s[0]]+' '+TOOTH_NAMES[+s[1]]}
+var TREATMENTS=[
+  {id:'cleaning',name:'Cleaning & polish',lo:800,hi:2500,per:'per session',why:'Stains, tartar build-up and how long since your last clean change the price. Some clinics include a free checkup with it.'},
+  {id:'filling',name:'Filling (one tooth)',lo:1500,hi:5000,per:'per tooth',why:'Silver amalgam is cheapest; tooth-coloured composite costs more; a deep cavity near the nerve costs the most.'},
+  {id:'rct',name:'Root canal treatment',lo:5000,hi:12000,per:'per tooth, without crown',why:'Front teeth are simpler and cheaper; molars have more canals and cost more. A crown afterwards is usually extra.'},
+  {id:'extraction',name:'Tooth extraction',lo:1000,hi:5000,per:'per tooth (simple)',why:'A loose or broken tooth is quick. An impacted wisdom tooth needs minor surgery and costs several times more.'},
+  {id:'crown',name:'Crown / cap',lo:5000,hi:15000,per:'per crown',why:'Metal is cheapest, ceramic looks natural and costs more, zirconia sits at the top. Ask what material is quoted.'},
+  {id:'braces',name:'Braces / aligners',lo:35000,hi:150000,per:'full treatment',why:'Metal braces are the cheapest option; ceramic and clear aligners cost far more. The range covers 12–24 months of treatment.'},
+  {id:'whitening',name:'Teeth whitening',lo:5000,hi:15000,per:'per session',why:'In-clinic whitening is stronger than home kits. Results last months, not forever — coffee, tea and smoking stain again.'},
+  {id:'implant',name:'Dental implant',lo:25000,hi:50000,per:'per implant, without crown',why:'The implant screw, the crown on top and any bone graft are often quoted separately. Ask for the all-in figure.'}
+];
+var SIGNS=[
+  {tag:'Within 24 hours',title:'Throbbing pain + swelling',text:'A constant throb, a swollen cheek or gum, or pain that wakes you at night usually means infection. Do not wait it out — infections spread.'},
+  {tag:'Within 1 hour',title:'Knocked-out tooth',text:'Hold it by the crown (not the root), rinse gently if dirty, and keep it in cold milk or inside your cheek. A dentist can often save it if you reach one fast.'},
+  {tag:'This week',title:'Gums bleed when you brush',text:'Bleeding gums are usually early gum disease — not a sign to stop brushing. Brush gently, floss daily, and get a cleaning booked.'},
+  {tag:'This week',title:'Cold sensitivity that lingers',text:'A sharp zing that fades in seconds is common. Pain that lingers 30+ seconds after cold food or drink can mean a cavity or nerve trouble.'}
+];
+var GUIDES=[
+  {t:'Brush like a dentist does',b:'<b>Two minutes, twice a day.</b> Hold the brush at 45° to the gum line and use small circles — not hard scrubbing. Soft bristles clean better and do not wear enamel. Spit, do not rinse, so the fluoride stays on your teeth. Replace the brush every 3 months.'},
+  {t:'Floss without the bleed',b:'Take about 45 cm of floss, wrap it around your middle fingers, and slide it gently between teeth in a C-shape around each tooth. A little bleeding in the first week is normal — it should stop within 7–10 days of daily flossing. If it does not, see a dentist.'},
+  {t:'Fluoride — friend, not foe',b:'Fluoride rebuilds weakened enamel and is the single best-proven cavity fighter. Use a pea-sized amount of fluoride toothpaste (1000–1500 ppm). Children under 6 should use a rice-grain amount and be supervised so they do not swallow it.'},
+  {t:'Foods that stain and weaken enamel',b:'Tea, coffee, cola, paan and tobacco stain teeth. Sour foods and fizzy drinks soften enamel — wait 30 minutes before brushing after them. Crunchy foods like apples and carrots help clean teeth naturally. Rinse with water after anything sweet or sour.'},
+  {t:'Kids\u2019 teeth: start early',b:'First dental visit by age 1, or within 6 months of the first tooth. Brush a baby\u2019s teeth as soon as they appear. Avoid letting a child fall asleep with a milk bottle — the sugars pool around teeth all night and cause early decay.'},
+  {t:'Braces & aligner care',b:'Food traps around brackets, so brush after every meal and use interdental brushes. Avoid sticky sweets and very hard foods. With aligners, wear them 20–22 hours a day, remove them to eat, and rinse before putting them back.'}
+];
+
+/* ---------- state ---------- */
+function freshState(){
+  var today=dkey(new Date());
