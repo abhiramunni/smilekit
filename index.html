@@ -798,3 +798,53 @@ function renderGuides(){
     var div=document.createElement('div');div.className='guide';
     div.innerHTML='<button type="button"><span>'+g.t+'</span><span class="chev">+</span></button><div class="body">'+g.b+'</div>';
     div.querySelector('button').addEventListener('click',function(){div.classList.toggle('open')});
+    box.appendChild(div);
+  });
+}
+
+/* ---------- summary / data ---------- */
+$('#copySummary').addEventListener('click',function(){
+  var lines=['SMILEKIT — MY DENTAL SUMMARY'];
+  var rec=todayRec();
+  lines.push('Today: morning brush '+(rec.am?'done':'not done')+', night brush '+(rec.pm?'done':'not done')+', floss '+(rec.floss?'done':'not done')+'.');
+  lines.push('Brushing streak: '+streakDays()+' day(s).');
+  var next=addMonths(state.lastCheckup,6);
+  lines.push('Last checkup: '+fmtDate(state.lastCheckup)+' — next due '+fmtDate(dkey(next))+'.');
+  var issues=Object.keys(state.teeth).filter(function(f){return state.teeth[f].status==='watch'||state.teeth[f].status==='pain'});
+  if(issues.length){lines.push('Teeth needing attention:');issues.forEach(function(f){var r=state.teeth[f];lines.push('- Tooth '+f+' ('+toothName(+f)+'): '+STATUSES[r.status].label+(r.note?' — '+r.note:''))})}
+  else{lines.push('No teeth flagged right now.')}
+  if(state.visits.length){lines.push('Visits ('+state.visits.length+'):');state.visits.forEach(function(v){lines.push('- '+fmtDate(v.date)+': '+v.treatment+' — '+inr(v.cost))})}
+  var txt=lines.join('\n');
+  function done(){toast('Summary copied — paste it anywhere')}
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done,function(){fallback()})}
+  else fallback();
+  function fallback(){try{var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();done()}catch(e){toast('Copy did not work — select the text manually')}}
+});
+$('#removeSamples').addEventListener('click',function(){
+  Object.keys(state.teeth).forEach(function(f){if(state.teeth[f].sample)delete state.teeth[f]});
+  state.visits=state.visits.filter(function(v){return !v.sample});
+  state.samples=false;save();buildChart();renderToothDetail();renderVisits();renderStats();toast('Sample entries removed');
+});
+$('#eraseAll').addEventListener('click',function(){
+  if(!window.confirm('Erase everything in SmileKit — your teeth notes, history and visits? This cannot be undone.'))return;
+  try{localStorage.removeItem(LS_KEY)}catch(e){}
+  state=freshState();state.samples=false;state.teeth={};state.visits=[];
+  save();buildChart();renderToothDetail();renderToday();renderCare();renderVisits();renderStats();toast('Everything erased — fresh start');
+});
+
+/* ---------- init ---------- */
+renderEstOptions();
+buildChart();
+renderLegend();
+renderToothDetail();
+renderToday();
+renderCare();
+renderVisits();
+renderEst();
+renderSigns();
+renderGuides();
+renderStats();
+window.SmileKit={state:function(){return state},streakDays:streakDays,STATUSES:STATUSES,TREATMENTS:TREATMENTS,fmtT:fmtT};
+</script>
+</body>
+</html>
