@@ -558,3 +558,43 @@ function countBy(status){var n=0;Object.keys(state.teeth).forEach(function(f){if
 function renderStats(){
   $('#statStreak').textContent=streakDays();
   $('#statIssues').textContent=countBy('watch')+countBy('pain');
+  $('#statTreated').textContent=countBy('treated');
+  var total=state.visits.reduce(function(a,v){return a+(+v.cost||0)},0);
+  $('#statSpent').textContent=inr(total);
+}
+
+/* ---------- today checks ---------- */
+var CHECKS=[
+  {id:'am',label:'Morning brush',hint:'Before breakfast, or 30 min after eating'},
+  {id:'pm',label:'Night brush',hint:'The important one — before bed, never skip'},
+  {id:'floss',label:'Flossed today',hint:'Between every tooth, once a day is enough'}
+];
+function todayRec(){var k=dkey(new Date());if(!state.history[k])state.history[k]={am:false,pm:false,floss:false};return state.history[k]}
+function renderToday(){
+  var rec=todayRec(),box=$('#todayChecks');box.innerHTML='';
+  CHECKS.forEach(function(c){
+    var div=document.createElement('div');
+    div.className='checkitem'+(rec[c.id]?' done':'');
+    div.innerHTML='<span class="tick">'+(rec[c.id]?'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 8.5 L6 12 L13.5 4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>':'')+'</span><span><b>'+c.label+'</b><span>'+c.hint+'</span></span><span class="right small muted">'+(rec[c.id]?'Done':'Not yet')+'</span>';
+    div.style.cursor='pointer';
+    div.addEventListener('click',function(){rec[c.id]=!rec[c.id];save();renderToday();renderStats();});
+    box.appendChild(div);
+  });
+}
+
+/* ---------- brush timer ---------- */
+var T={total:120,left:120,running:false,last:0,raf:0};
+var QUADS=['Upper right','Upper left','Lower left','Lower right'];
+function fmtT(s){return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
+function renderTimer(){
+  $('#timerText').textContent=fmtT(T.left);
+  var done=T.total-T.left,qi=Math.min(3,Math.floor(done/30));
+  if(T.left>=T.total){$('#timerQuad').textContent='Ready when you are';}
+  else if(T.left<=0){$('#timerQuad').textContent='Done — nice work';}
+  else{$('#timerQuad').textContent='Now brushing: '+QUADS[qi].toLowerCase();}
+  $$('#quadDots i').forEach(function(d,i){d.classList.toggle('on',T.left<T.total&&i<=qi)});
+  var C=2*Math.PI*82;
+  $('#ringFg').style.strokeDashoffset=String(C*(T.left/T.total));
+  $('#timerBtn').textContent=T.running?'Pause':(T.left<=0?'Brush again':(T.left<T.total?'Resume':'Start brushing'));
+}
+function timerTick(){
