@@ -718,3 +718,43 @@ function renderCare(){
   if(nd>0){cb.innerHTML=nd+' <small>days to go</small>';cl.textContent='Next checkup due '+fmtDate(dkey(next))+' (last visit '+fmtDate(state.lastCheckup)+').';
     $('#checkupBar').style.width=Math.max(4,Math.min(100,Math.round(100-nd/182*100)))+'%';}
   else if(nd===0){cb.innerHTML='Today <small>is the day</small>';cl.textContent='Your 6-month checkup is due today.';$('#checkupBar').style.width='100%';}
+  else{cb.innerHTML=Math.abs(nd)+' <small>days overdue</small>';cl.textContent='Checkup was due '+fmtDate(dkey(next))+' — worth booking this week.';$('#checkupBar').style.width='100%';}
+  var alert=$('#checkupAlert');
+  if(nd<=0){alert.innerHTML='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="flex:none;margin-top:2px"><path d="M12 3 L22 20 H2 Z" fill="#c05f3c"/><text x="12" y="17" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff">!</text></svg><span><b>Your 6-month checkup is '+(nd===0?'due today':'overdue by '+Math.abs(nd)+' days')+'.</b><br><span class="small">Nothing hurts? That is exactly when a checkup is cheapest — small problems are found before they become big bills.</span></span>';}
+  else{alert.innerHTML='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="flex:none;margin-top:2px"><circle cx="12" cy="12" r="10" fill="#b07d3c"/><path d="M7 12.5 L10.5 16 L17 8.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b>Checkup on track.</b><br><span class="small">Next one due '+fmtDate(dkey(next))+' — '+nd+' days away. Last visit '+fmtDate(state.lastCheckup)+'.</span></span>';alert.style.borderLeftColor='var(--bronze)';}
+  var rep=addMonths(state.brushStart,3),bd=daysBetween(today,rep);
+  var bb=$('#brushBig'),bl=$('#brushLine');
+  if(bd>0){bb.innerHTML=bd+' <small>days left</small>';bl.textContent='Replace your brush by '+fmtDate(dkey(rep))+' (started '+fmtDate(state.brushStart)+').';$('#brushBar').style.width=Math.max(4,Math.min(100,Math.round(100-bd/91*100)))+'%';}
+  else{bb.innerHTML='Time <small>to replace</small>';bl.textContent='Your brush is past 3 months (started '+fmtDate(state.brushStart)+'). A fresh one cleans far better.';$('#brushBar').style.width='100%';}
+  $('#lastCheckupInput').value=state.lastCheckup;
+  $('#brushDateInput').value=state.brushStart;
+}
+$('#saveCheckup').addEventListener('click',function(){
+  var v=$('#lastCheckupInput').value;if(!parseDate(v)){toast('Pick a valid date');return}
+  state.lastCheckup=v;save();renderCare();toast('Last checkup saved');
+});
+$('#saveBrush').addEventListener('click',function(){
+  var v=$('#brushDateInput').value;if(!parseDate(v)){toast('Pick a valid date');return}
+  state.brushStart=v;save();renderCare();toast('Brush start date saved');
+});
+
+/* ---------- visits ---------- */
+function renderVisits(){
+  var body=$('#visitBody');body.innerHTML='';
+  var sorted=state.visits.slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date))});
+  if(!sorted.length){body.innerHTML='<tr><td colspan="5" class="muted" style="padding:16px">No visits logged yet — add your last one above.</td></tr>'}
+  sorted.forEach(function(v,idx){
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td style="white-space:nowrap">'+esc(fmtDate(v.date))+'</td><td>'+esc(v.treatment)+(v.sample?' <span class="small muted">(sample)</span>':'')+'</td><td>'+esc(v.clinic||'—')+'</td><td style="text-align:right;font-weight:700">'+inr(v.cost)+'</td><td style="text-align:right"><button type="button" class="btn ghost sm" data-i="'+state.visits.indexOf(v)+'">Remove</button></td>';
+    body.appendChild(tr);
+  });
+  var total=state.visits.reduce(function(a,v){return a+(+v.cost||0)},0);
+  $('#visitTotal').textContent=inr(total);
+  $$('#visitBody button').forEach(function(b){
+    b.addEventListener('click',function(){state.visits.splice(+b.getAttribute('data-i'),1);save();renderVisits();renderStats();toast('Visit removed')});
+  });
+}
+$('#addVisit').addEventListener('click',function(){
+  var d=$('#vDate').value,t=$('#vTreat').value.trim(),c=$('#vClinic').value.trim(),cost=+($('#vCost').value||0);
+  if(!parseDate(d)){toast('Pick the visit date');return}
+  if(!t){toast('What was done? Add the treatment');return}
