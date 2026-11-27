@@ -678,3 +678,43 @@ function renderToothDetail(){
       return '<button type="button" class="stbtn'+(rec.status===k?' on-'+k:'')+'" data-st="'+k+'">'+STATUSES[k].label+'</button>'}).join('')+'</div>'
     +'<textarea id="toothNote" placeholder="Note — e.g. hurts when I drink cold water, started last Tuesday…" aria-label="Note for tooth '+fdi+'">'+esc(rec.note||'')+'</textarea>'
     +'<div style="display:flex;gap:8px;margin-top:10px"><button class="btn gold sm" id="saveTooth" type="button">Save note</button>'
+    +'<button class="btn ghost sm" id="clearTooth" type="button">Mark healthy &amp; clear</button></div></div>';
+  html+='<div><div class="eyebrow">Needs attention</div>';
+  if(!issues.length){html+='<p class="muted" style="margin-top:8px">Nothing flagged right now. If a tooth starts hurting, tap it and mark it here — a dated note helps your dentist a lot.</p>'}
+  else{html+='<div class="issue-list" style="margin-top:8px">'+issues.map(function(f){
+    var r=state.teeth[f];
+    return '<div class="issue"><span class="dot" style="background:'+STATUSES[r.status].color+';border:1px solid #2b1d12;margin-top:5px"></span><span><b>Tooth '+f+'</b> — '+STATUSES[r.status].label+(r.note?'<br><span class="muted">'+esc(r.note)+'</span>':'')+'</span></div>'}).join('')+'</div>'}
+  html+='</div>';
+  box.innerHTML=html;
+  $$('#toothDetail .stbtn').forEach(function(b){
+    b.addEventListener('click',function(){
+      var st=b.getAttribute('data-st');
+      var cur=state.teeth[fdi]||{status:'healthy',note:'',updated:''};
+      cur.status=st;cur.updated=dkey(new Date());
+      if(st==='healthy'){cur.note=''}
+      state.teeth[fdi]=cur;save();buildChart();renderToothDetail();renderStats();
+      toast(st==='healthy'?'Tooth '+fdi+' marked healthy':'Tooth '+fdi+' marked: '+STATUSES[st].label);
+    });
+  });
+  $('#saveTooth').addEventListener('click',function(){
+    var note=$('#toothNote').value.trim();
+    var cur=state.teeth[fdi]||{status:'healthy',note:'',updated:''};
+    cur.note=note;cur.updated=dkey(new Date());
+    if(cur.status==='healthy'&&note)cur.status='watch';
+    state.teeth[fdi]=cur;save();buildChart();renderToothDetail();renderStats();
+    toast('Note saved for tooth '+fdi);
+  });
+  $('#clearTooth').addEventListener('click',function(){
+    delete state.teeth[fdi];save();buildChart();renderToothDetail();renderStats();
+    toast('Tooth '+fdi+' cleared');
+  });
+}
+
+/* ---------- countdowns ---------- */
+function renderCare(){
+  var today=new Date();today.setHours(0,0,0,0);
+  var next=addMonths(state.lastCheckup,6),nd=daysBetween(today,next);
+  var cb=$('#checkupBig'),cl=$('#checkupLine');
+  if(nd>0){cb.innerHTML=nd+' <small>days to go</small>';cl.textContent='Next checkup due '+fmtDate(dkey(next))+' (last visit '+fmtDate(state.lastCheckup)+').';
+    $('#checkupBar').style.width=Math.max(4,Math.min(100,Math.round(100-nd/182*100)))+'%';}
+  else if(nd===0){cb.innerHTML='Today <small>is the day</small>';cl.textContent='Your 6-month checkup is due today.';$('#checkupBar').style.width='100%';}
