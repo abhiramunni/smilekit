@@ -758,3 +758,43 @@ $('#addVisit').addEventListener('click',function(){
   var d=$('#vDate').value,t=$('#vTreat').value.trim(),c=$('#vClinic').value.trim(),cost=+($('#vCost').value||0);
   if(!parseDate(d)){toast('Pick the visit date');return}
   if(!t){toast('What was done? Add the treatment');return}
+  if(!(cost>0)){toast('Add the cost in ₹');return}
+  state.visits.push({date:d,treatment:t,clinic:c,cost:cost});
+  $('#vDate').value='';$('#vTreat').value='';$('#vClinic').value='';$('#vCost').value='';
+  save();renderVisits();renderStats();toast('Visit added');
+});
+
+/* ---------- estimator ---------- */
+var estCity='metro';
+function renderEstOptions(){
+  var sel=$('#estTreat');
+  sel.innerHTML=TREATMENTS.map(function(t){return '<option value="'+t.id+'">'+t.name+'</option>'}).join('');
+}
+function renderEst(){
+  var t=TREATMENTS.find(function(x){return x.id===$('#estTreat').value})||TREATMENTS[0];
+  var n=+($('#estTeeth').value||1);
+  if(t.id==='braces')n=1; /* braces are quoted for the full course, not per tooth */
+  var f=estCity==='metro'?1:0.7;
+  var lo=Math.round(t.lo*f/50)*50*n,hi=Math.round(t.hi*f/50)*50*n;
+  $('#estRange').innerHTML=inr(lo)+' – '+inr(hi)+' <small>'+(n>1?'for '+n+' teeth':'total')+'</small>';
+  $('#estPer').textContent=t.name+' · '+t.per+(estCity==='small'?' · smaller-city prices (about 30% lower)':' · metro-city prices');
+  $('#estWhy').textContent='What changes the price: '+t.why;
+  $('#estNote').textContent=t.id==='braces'?'Braces and aligners are quoted for the full course, so the teeth count does not change the range.':'Prices shown are indicative. Ask your clinic for a written estimate before treatment starts.';
+}
+$('#estTreat').addEventListener('change',renderEst);
+$('#estTeeth').addEventListener('change',renderEst);
+$$('#estCity button').forEach(function(b){
+  b.addEventListener('click',function(){estCity=b.getAttribute('data-city');$$('#estCity button').forEach(function(x){x.classList.toggle('on',x===b)});renderEst()});
+});
+
+/* ---------- signs & guides ---------- */
+function renderSigns(){
+  $('#signsGrid').innerHTML=SIGNS.map(function(s){
+    return '<div class="card sign"><span class="tag">'+s.tag+'</span><h3>'+s.title+'</h3><p>'+s.text+'</p></div>'}).join('');
+}
+function renderGuides(){
+  var box=$('#guideList');box.innerHTML='';
+  GUIDES.forEach(function(g){
+    var div=document.createElement('div');div.className='guide';
+    div.innerHTML='<button type="button"><span>'+g.t+'</span><span class="chev">+</span></button><div class="body">'+g.b+'</div>';
+    div.querySelector('button').addEventListener('click',function(){div.classList.toggle('open')});
