@@ -398,3 +398,43 @@ footer.site .wrap{display:flex;flex-direction:column;gap:8px}
     </div>
   </section>
 </main>
+
+<footer class="site"><div class="wrap">
+  <b class="serif" style="font-size:18px;color:var(--ink)">SmileKit</b>
+  <span>Built as a single file. Your teeth, your data — stored only in this browser. Prices are indicative Indian ranges, not quotes.</span>
+  <span>SmileKit is a personal tracker, not a medical device. It does not diagnose anything. For pain, swelling, bleeding that will not stop, or a knocked-out tooth, see a dentist promptly.</span>
+</div></footer>
+
+<!-- coach -->
+<div id="coach" role="dialog" aria-modal="true" aria-label="How SmileKit works">
+  <div class="box">
+    <div class="eyebrow" id="coachStep">Step 1 of 3</div>
+    <h3 id="coachTitle"></h3>
+    <p id="coachText"></p>
+    <div class="dots" id="coachDots"><i class="on"></i><i></i><i></i></div>
+    <div class="row">
+      <button class="btn ghost sm" id="coachSkip" type="button">Skip tour</button>
+      <button class="btn gold sm" id="coachNext" type="button">Next</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" role="status"></div>
+<script>
+'use strict';
+/* ================= SmileKit ================= */
+var LS_KEY='smilekit_v1', SEEN_KEY='smilekit_seen', COACH_KEY='smilekit_coach_done';
+var $=function(s){return document.querySelector(s)};
+var $$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s))};
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function dkey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function parseDate(s){var p=String(s||'').split('-');if(p.length!==3)return null;var d=new Date(+p[0],+p[1]-1,+p[2]);return isNaN(d)?null:d}
+function fmtDate(s){var d=parseDate(s);if(!d)return '—';return d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}
+function addMonths(s,n){var d=parseDate(s);if(!d)return null;return new Date(d.getFullYear(),d.getMonth()+n,d.getDate())}
+function daysBetween(a,b){return Math.round((b-a)/86400000)}
+function inr(n){return '₹'+Number(n||0).toLocaleString('en-IN')}
+function toast(msg){var t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove('show')},2600)}
+function beep(freq,dur){try{var C=window.AudioContext||window.webkitAudioContext;if(!C)return;var ctx=beep._c||(beep._c=new C());var o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=freq||880;o.connect(g);g.connect(ctx.destination);g.gain.setValueAtTime(0.08,ctx.currentTime);o.start();g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+(dur||0.15));o.stop(ctx.currentTime+(dur||0.15));}catch(e){}}
+
+/* ---------- static data ---------- */
+var STATUSES={
