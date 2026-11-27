@@ -638,3 +638,43 @@ function toothFill(fdi){
 }
 function buildChart(){
   var svg=$('#mouthSvg'),s='';
+  s+='<text x="8" y="14" font-size="11" font-weight="700" fill="#b07d3c" letter-spacing="1">UPPER</text>';
+  s+='<text x="8" y="140" font-size="11" font-weight="700" fill="#b07d3c" letter-spacing="1">LOWER</text>';
+  s+='<line x1="382" y1="6" x2="382" y2="98" stroke="#e6dac4" stroke-width="1.5" stroke-dasharray="4 4"/>';
+  s+='<line x1="382" y1="142" x2="382" y2="234" stroke="#e6dac4" stroke-width="1.5" stroke-dasharray="4 4"/>';
+  function row(list,y,flip){
+    list.forEach(function(fdi,i){
+      var x=8+i*46+(i>=8?14:0);
+      var tr=flip?('translate('+x+' '+y+') scale(1,-1) translate(0,-64)'):('translate('+x+' '+y+')');
+      var sel=String(state.selected)===String(fdi)?' sel':'';
+      s+='<g class="tooth'+sel+'" data-fdi="'+fdi+'" transform="'+tr+'"><path d="'+pathFor(fdi)+'" fill="'+toothFill(fdi)+'" stroke="#2b1d12" stroke-width="1.5"/><ellipse cx="22" cy="13" rx="7" ry="3.5" fill="rgba(255,255,255,.45)"/></g>';
+      var ly=flip?(y+80):(y+80);
+      s+='<text x="'+(x+22)+'" y="'+ly+'" text-anchor="middle" font-size="11" font-weight="600" fill="#6b5844">'+fdi+'</text>';
+    });
+  }
+  row(UPPER,20,true);
+  row(LOWER,146,false);
+  svg.innerHTML=s;
+  $$('#mouthSvg .tooth').forEach(function(g){
+    g.addEventListener('click',function(){state.selected=g.getAttribute('data-fdi');save();buildChart();renderToothDetail();});
+  });
+}
+function renderLegend(){
+  var box=$('#legend');box.innerHTML='';
+  Object.keys(STATUSES).forEach(function(k){
+    var sp=document.createElement('span');sp.className='pill';
+    sp.innerHTML='<span class="dot" style="background:'+STATUSES[k].color+';border:1px solid #2b1d12"></span>'+STATUSES[k].label;
+    box.appendChild(sp);
+  });
+}
+function renderToothDetail(){
+  var fdi=String(state.selected),rec=state.teeth[fdi]||{status:'healthy',note:'',updated:''};
+  var box=$('#toothDetail');
+  var issues=Object.keys(state.teeth).filter(function(f){return state.teeth[f].status==='watch'||state.teeth[f].status==='pain'});
+  var html='<div><div class="eyebrow">Tooth '+fdi+'</div><h3>'+esc(toothName(+fdi))+'</h3>'
+    +'<p class="muted small" style="margin-top:4px">Status: <b style="color:var(--ink)">'+STATUSES[rec.status].label+'</b>'
+    +(rec.updated?' &middot; last updated '+esc(fmtDate(rec.updated)):'')+(rec.sample?' &middot; sample entry':'')+'</p>'
+    +'<div class="status-btns">'+Object.keys(STATUSES).map(function(k){
+      return '<button type="button" class="stbtn'+(rec.status===k?' on-'+k:'')+'" data-st="'+k+'">'+STATUSES[k].label+'</button>'}).join('')+'</div>'
+    +'<textarea id="toothNote" placeholder="Note — e.g. hurts when I drink cold water, started last Tuesday…" aria-label="Note for tooth '+fdi+'">'+esc(rec.note||'')+'</textarea>'
+    +'<div style="display:flex;gap:8px;margin-top:10px"><button class="btn gold sm" id="saveTooth" type="button">Save note</button>'
