@@ -318,3 +318,43 @@ footer.site .wrap{display:flex;flex-direction:column;gap:8px}
     <p class="lede">Log what was done and what it cost. Over a year or two, this becomes your dental history — handy at a new clinic, and handy when a bill looks wrong.</p>
     <div class="card" style="overflow:hidden">
       <div style="overflow-x:auto"><table class="visit-table" id="visitTable">
+        <thead><tr><th>Date</th><th>Treatment</th><th>Clinic</th><th style="text-align:right">Cost</th><th></th></tr></thead>
+        <tbody id="visitBody"></tbody>
+        <tfoot><tr><td colspan="3" style="font-weight:700">Total spent</td><td id="visitTotal" style="text-align:right;font-weight:800">₹0</td><td></td></tr></tfoot>
+      </table></div>
+      <div class="addform">
+        <input type="date" id="vDate" aria-label="Visit date">
+        <input type="text" id="vTreat" placeholder="Treatment — e.g. Cleaning &amp; polish" aria-label="Treatment">
+        <input type="text" id="vClinic" placeholder="Clinic — e.g. Smile Care Dental, BTM" aria-label="Clinic">
+        <input type="number" id="vCost" placeholder="Cost in ₹" min="0" aria-label="Cost in rupees">
+        <button class="btn gold full" id="addVisit" type="button">Add this visit</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- COST ESTIMATOR -->
+  <section class="block" id="costs">
+    <div class="eyebrow">Before you sit in the chair</div>
+    <h2>What should this cost?</h2>
+    <p class="lede">Indicative price ranges for common dental work in India, so you can spot a fair quote — and ask questions when one is not.</p>
+    <div class="helper">These are typical ranges gathered from Indian clinic price lists. Real prices vary by city, clinic and complexity. Always ask for a written estimate before treatment starts.</div>
+    <div class="est-grid">
+      <div class="card est-form">
+        <label for="estTreat">Treatment</label>
+        <select id="estTreat"></select>
+        <label>Where are you getting it done?</label>
+        <div class="seg" id="estCity">
+          <button type="button" data-city="metro" class="on">Metro city</button>
+          <button type="button" data-city="small">Smaller city / town</button>
+        </div>
+        <label for="estTeeth">How many teeth?</label>
+        <select id="estTeeth"><option value="1">1 tooth</option><option value="2">2 teeth</option><option value="3">3 teeth</option><option value="4">4 teeth</option></select>
+        <p class="small muted" style="margin-top:14px" id="estNote"></p>
+      </div>
+      <div class="card est-result">
+        <div class="eyebrow">Indicative range</div>
+        <div class="range" id="estRange">—</div>
+        <p class="muted" id="estPer">—</p>
+        <p class="small" id="estWhy" style="margin-top:10px;color:var(--ink2)"></p>
+      </div>
+    </div>
