@@ -518,3 +518,43 @@ save();
   var reduced=false;try{reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){}
   if(seen||reduced)intro.classList.add('quick');
   var ms=(seen||reduced)?1300:4100;
+  var done=false;
+  function hide(){if(done)return;done=true;intro.classList.add('hide');try{localStorage.setItem(SEEN_KEY,'1')}catch(e){}setTimeout(function(){intro.remove()},700)}
+  intro.addEventListener('click',hide);
+  setTimeout(hide,ms);
+})();
+
+/* ---------- coach ---------- */
+var COACH=[
+  {t:'Your whole mouth, on one chart',x:'Tap any tooth to say how it feels — hurts, sensitive, treated, or fine. The chart remembers, so your dentist gets the full story, not just "it hurts somewhere".'},
+  {t:'Two minutes, four corners',x:'The brush timer walks you through each quarter of your mouth for 30 seconds. Finish it and today\u2019s brush ticks itself off.'},
+  {t:'Know the price before the chair',x:'Pick a treatment and a city to see what it should cost in India. No more nodding at a quote you cannot judge.'}
+];
+var coachStep=0;
+function showCoach(step){
+  coachStep=step;
+  $('#coachStep').textContent='Step '+(step+1)+' of 3';
+  $('#coachTitle').textContent=COACH[step].t;
+  $('#coachText').textContent=COACH[step].x;
+  $('#coachNext').textContent=step===2?'Start using SmileKit':'Next';
+  $$('#coachDots i').forEach(function(d,i){d.classList.toggle('on',i===step)});
+  $('#coach').classList.add('show');
+}
+function hideCoach(){ $('#coach').classList.remove('show'); try{localStorage.setItem(COACH_KEY,'1')}catch(e){} }
+$('#coachNext').addEventListener('click',function(){ if(coachStep<2)showCoach(coachStep+1); else hideCoach(); });
+$('#coachSkip').addEventListener('click',hideCoach);
+$('#coach').addEventListener('click',function(e){ if(e.target===this)hideCoach(); });
+$('#howBtn').addEventListener('click',function(){ showCoach(0); });
+(function(){var done=false;try{done=!!localStorage.getItem(COACH_KEY)}catch(e){}if(!done)setTimeout(function(){showCoach(0)},4600)})();
+
+/* ---------- stats ---------- */
+function streakDays(){
+  var n=0,d=new Date();
+  if(!(state.history[dkey(d)]||{}).am||!(state.history[dkey(d)]||{}).pm){d.setDate(d.getDate()-1)}
+  while(true){var h=state.history[dkey(d)];if(h&&h.am&&h.pm){n++;d.setDate(d.getDate()-1)}else break}
+  return n;
+}
+function countBy(status){var n=0;Object.keys(state.teeth).forEach(function(f){if(state.teeth[f].status===status)n++});return n}
+function renderStats(){
+  $('#statStreak').textContent=streakDays();
+  $('#statIssues').textContent=countBy('watch')+countBy('pain');
