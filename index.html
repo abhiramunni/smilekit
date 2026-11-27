@@ -278,3 +278,43 @@ footer.site .wrap{display:flex;flex-direction:column;gap:8px}
       <div class="legend" id="legend"></div>
       <div class="tooth-detail" id="toothDetail"></div>
     </div>
+  </section>
+
+  <!-- CARE COUNTDOWNS -->
+  <section class="block" id="care">
+    <div class="eyebrow">Stay ahead of it</div>
+    <h2>Two dates worth remembering.</h2>
+    <p class="lede">Most dental trouble starts small and cheap, and ends big and expensive, because nobody noticed in time. These two countdowns do the noticing for you.</p>
+    <div class="care-grid">
+      <div class="card care-card">
+        <div class="eyebrow">Dental checkup</div>
+        <div class="big" id="checkupBig">—</div>
+        <p class="muted" id="checkupLine" style="margin-top:6px">—</p>
+        <div class="progress"><i id="checkupBar" style="width:0%"></i></div>
+        <p class="small muted" style="margin-top:8px">Dentists suggest a checkup every 6 months — even when nothing hurts. Tap to update your last visit date.</p>
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+          <input type="date" id="lastCheckupInput" aria-label="Last checkup date" style="border:1.5px solid var(--line);border-radius:11px;padding:9px 11px;background:#fff">
+          <button class="btn sm" id="saveCheckup" type="button">Save date</button>
+        </div>
+      </div>
+      <div class="card care-card">
+        <div class="eyebrow">Toothbrush</div>
+        <div class="big" id="brushBig">—</div>
+        <p class="muted" id="brushLine" style="margin-top:6px">—</p>
+        <div class="progress"><i id="brushBar" style="width:0%"></i></div>
+        <p class="small muted" style="margin-top:8px">Replace your brush every 3 months — sooner if the bristles splay. A worn brush cleans badly and can hurt your gums.</p>
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+          <input type="date" id="brushDateInput" aria-label="Toothbrush started date" style="border:1.5px solid var(--line);border-radius:11px;padding:9px 11px;background:#fff">
+          <button class="btn sm" id="saveBrush" type="button">Save date</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VISITS -->
+  <section class="block" id="visits">
+    <div class="eyebrow">Visit ledger</div>
+    <h2>Every visit, on the record.</h2>
+    <p class="lede">Log what was done and what it cost. Over a year or two, this becomes your dental history — handy at a new clinic, and handy when a bill looks wrong.</p>
+    <div class="card" style="overflow:hidden">
+      <div style="overflow-x:auto"><table class="visit-table" id="visitTable">
