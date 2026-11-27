@@ -478,3 +478,43 @@ var GUIDES=[
 /* ---------- state ---------- */
 function freshState(){
   var today=dkey(new Date());
+  var teeth={};
+  teeth['46']={status:'watch',note:'Cold water zings on this side. Started last week.',updated:'2026-11-21',sample:true};
+  teeth['11']={status:'treated',note:'Composite filling, Jan 2026. Feels fine now.',updated:'2026-01-12',sample:true};
+  teeth['28']={status:'watch',note:'Wisdom tooth partly out. No pain yet.',updated:'2026-10-02',sample:true};
+  return {
+    v:1, samples:true, selected:'46',
+    teeth:teeth,
+    history:{},
+    lastCheckup:'2026-05-15',
+    brushStart:'2026-09-01',
+    visits:[
+      {date:'2026-05-15',treatment:'Cleaning & polish',clinic:'Smile Care Dental, BTM Layout',cost:1200,sample:true},
+      {date:'2026-01-12',treatment:'Filling — tooth 11',clinic:'Smile Care Dental, BTM Layout',cost:2500,sample:true}
+    ]
+  };
+}
+var state;
+function load(){
+  try{var raw=localStorage.getItem(LS_KEY);if(!raw)return freshState();
+    var s=JSON.parse(raw);if(!s||s.v!==1)return freshState();
+    var f=freshState();
+    s.teeth=s.teeth||{};s.history=s.history||{};s.visits=s.visits||[];
+    s.lastCheckup=s.lastCheckup||f.lastCheckup;s.brushStart=s.brushStart||f.brushStart;
+    s.selected=s.selected||'46';if(typeof s.samples!=='boolean')s.samples=true;
+    return s;
+  }catch(e){return freshState()}
+}
+function save(){try{localStorage.setItem(LS_KEY,JSON.stringify(state))}catch(e){}}
+state=load();
+if(!state.history[dkey(new Date())])state.history[dkey(new Date())]={am:false,pm:false,floss:false};
+save();
+
+/* ---------- intro ---------- */
+(function(){
+  var intro=$('#intro'),title=$('#introTitle');
+  'SmileKit'.split('').forEach(function(ch,i){var s=document.createElement('span');s.textContent=ch;s.style.animationDelay=(i*0.07)+'s';title.appendChild(s)});
+  var seen=false;try{seen=!!localStorage.getItem(SEEN_KEY)}catch(e){}
+  var reduced=false;try{reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){}
+  if(seen||reduced)intro.classList.add('quick');
+  var ms=(seen||reduced)?1300:4100;
